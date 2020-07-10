@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/edfloreshz/ipss/master/logo.png" width="150" />
+  <img src="https://raw.githubusercontent.com/edfloreshz/ipss/master/assets/logo.png" width="150" />
 
   <h1>InterPlanetary Sync System</h1>
 </div>
