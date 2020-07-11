@@ -1,5 +1,5 @@
 [package]
-name = "ipss"
+name = "core"
 version = "0.1.0"
 authors = ["Eduardo Flores <edfloreshz@gmail.com>"]
 edition = "2018"
@@ -7,4 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-core = { path = "core" }
+os_info = "2.0.6"
+dirs = "3.0.1"
+progress = "0.2"
+notify = "4.0.15"
