@@ -1,32 +1,32 @@
 use core::utils::{ipfs};
 use core::ipss;
-use std::path::Path;
 use core::ipss::daemon;
-use std::result::Result::Err;
 use ipfs::installer::InstallStatus;
 
 fn main() {
-    println!("\nWelcome to the InterPlanetary Sync System!");
+    print_logo();
     match ipfs::installer::install() {
-        Ok(_) => {
+        InstallStatus::Installed => {
             match ipss::installer::install() {
-                Ok(_) => daemon::init(),
-                Err(e) => println!("{}", e)
-            }
-        },
-        Err(InstallStatus::Installed) => {
-            if ipss_installed() {
-                daemon::init();
-            }
-            match ipss::installer::install() {
-                Ok(_) => daemon::init(),
-                Err(e) => println!("{}", e)
+                InstallStatus::Installed => {
+                    println!("IPSS is already installed.");
+                    daemon::init();
+                },
+                InstallStatus::Error(e) => println!("{}", e)
             }
         }
-        Err(InstallStatus::Error(e)) => println!("{}", e),
+        InstallStatus::Error(e) => println!("{}", e),
     }
 }
 
-fn ipss_installed() -> bool {
-    Path::new("/usr/local/bin/ipss").exists()
+fn print_logo() {
+    println!("\n
+        ██╗██████╗ ███████╗███████╗
+        ██║██╔══██╗██╔════╝██╔════╝
+        ██║██████╔╝███████╗███████╗
+        ██║██╔═══╝ ╚════██║╚════██║
+        ██║██║     ███████║███████║
+        ╚═╝╚═╝     ╚══════╝╚══════╝
+    \nWelcome to the InterPlanetary Sync System!
+    ")
 }

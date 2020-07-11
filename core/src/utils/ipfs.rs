@@ -3,28 +3,27 @@ pub mod installer {
   use std::fs;
   use std::io;
   use std::process::Command;
-  use crate::utils::ipfs::installer::InstallStatus::Installed;
 
   pub enum InstallStatus {
     Installed,
     Error(String)
   }
 
-  pub fn install() -> Result<(), InstallStatus> {
+  pub fn install() -> InstallStatus {
     if !is_installed() {
       if want_to_install() {
         match install_ipfs() {
           Ok(_) => {
             println!("\nIPFS is now installed.");
-            Ok(())
+            InstallStatus::Installed
           },
-          Err(e) => Err(InstallStatus::Error(format!("An error occurred during the IPFS \
-        installation: {}", e)))
+          Err(e) => InstallStatus::Error(format!("An error occurred during the IPFS \
+        installation: {}", e))
         }
-      } else { Ok(()) }
+      } else { InstallStatus::Error("Perhaps later...".to_string()) }
     } else {
       println!("IPFS is already installed.");
-      Err(Installed)
+      InstallStatus::Installed
     }
   }
 
@@ -37,7 +36,6 @@ pub mod installer {
         true
       },
       _ => {
-        println!("Perhaps later...");
         false
       }
     }
