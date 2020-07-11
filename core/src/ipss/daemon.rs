@@ -16,6 +16,12 @@ pub fn init() {
   if let Some(dir) = dirs::download_dir() {
     watcher.watch(dir, RecursiveMode::Recursive).unwrap();
   }
+  if let Some(dir) = dirs::document_dir() {
+    watcher.watch(dir, RecursiveMode::Recursive).unwrap();
+  }
+  if let Some(dir) = dirs::desktop_dir(){
+    watcher.watch(dir, RecursiveMode::Recursive).unwrap();
+  }
 
   println!("Waiting for changes...");
   loop {
