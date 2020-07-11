@@ -4,7 +4,10 @@
   <h1>InterPlanetary Sync System</h1>
 </div>
 
+![Rust](https://github.com/edfloreshz/ipss/workflows/Rust/badge.svg?branch=master)
+
 The InterPlanetary Sync System or IPSS is a tool which allows users to store and sync their files in nearby nodes connected to the IPFS Network. 
+
 
 ## How does it work?
 
