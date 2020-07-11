@@ -11,15 +11,17 @@ pub mod installer {
   }
 
   pub fn install() -> Result<(), InstallStatus> {
-    if want_to_install() && !is_installed() {
-      match install_ipfs() {
-        Ok(_) => {
-          println!("\nIPFS is now installed.");
-          Ok(())
-        },
-        Err(e) => Err(InstallStatus::Error(format!("An error occurred during the IPFS \
+    if !is_installed() {
+      if want_to_install() {
+        match install_ipfs() {
+          Ok(_) => {
+            println!("\nIPFS is now installed.");
+            Ok(())
+          },
+          Err(e) => Err(InstallStatus::Error(format!("An error occurred during the IPFS \
         installation: {}", e)))
-      }
+        }
+      } else { Ok(()) }
     } else {
       println!("IPFS is already installed.");
       Err(Installed)
