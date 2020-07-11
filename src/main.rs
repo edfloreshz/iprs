@@ -1,7 +1,7 @@
 use core::utils::{ipfs};
 use core::ipss;
 use core::ipss::daemon;
-use ipfs::installer::InstallStatus;
+use core::InstallStatus;
 
 fn main() {
     print_logo();

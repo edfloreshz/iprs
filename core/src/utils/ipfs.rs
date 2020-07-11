@@ -3,11 +3,7 @@ pub mod installer {
   use std::fs;
   use std::io;
   use std::process::Command;
-
-  pub enum InstallStatus {
-    Installed,
-    Error(String)
-  }
+  use crate::InstallStatus;
 
   pub fn install() -> InstallStatus {
     if !is_installed() {

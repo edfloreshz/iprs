@@ -1,7 +1,7 @@
 use os_info;
-use crate::utils::ipfs::installer::InstallStatus;
 use std::path::Path;
 use std::process::Command;
+use crate::InstallStatus;
 
 #[cfg(target_os = "macos")]
 fn run()  -> InstallStatus  {
