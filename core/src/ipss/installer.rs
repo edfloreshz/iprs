@@ -4,15 +4,29 @@ use std::path::Path;
 use std::process::Command;
 
 #[cfg(target_os = "macos")]
-fn run()  -> Result<(), String> {
-  println!("Installing IPSS for {}", os_info::get());
-  let mut bar = progress::Bar::new();
-  bar.set_job_title(format!("Installing IPSS for {}", os::print_os_info()).as_str());
-  for i in 0..11 {
-    thread::sleep(Duration::from_millis(100));
-    bar.reach_percent(i * 10);
+fn run()  -> InstallStatus  {
+  if ipss_installed() {
+    InstallStatus::Installed
+  } else {
+    let install = Command::new("sudo")
+        .arg("-S")
+        .arg("mv")
+        .arg("ipss")
+        .arg("/usr/local/bin/")
+        .current_dir("/Users/eduardo/Documents/GitHub/ipss/target/debug")
+        .status();
+    match install {
+      Ok(exit) => {
+        if exit.success() {
+          println!("\nIPSS is now installed");
+          InstallStatus::Installed
+        } else {
+          InstallStatus::Error(format!("We weren't able to install IPSS."))
+        }
+      },
+      Err(e) => InstallStatus::Error(format!("An error occurred during IPSS installation: {}", e))
+    }
   }
-  println!("\nIPSS is now installed.")
 }
 
 #[cfg(target_os = "windows")]
