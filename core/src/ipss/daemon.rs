@@ -1,7 +1,9 @@
 use std::error::Error;
-use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
+use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher, op};
 use std::sync::mpsc::channel;
 use dirs;
+use crate::replication::engine;
+use std::fs::File;
 
 pub fn init() -> Result<(), Box<dyn Error>> {
   println!("Initializing the daemon...");
@@ -28,7 +30,34 @@ pub fn init() -> Result<(), Box<dyn Error>> {
   loop {
     match rx.recv() {
       Ok(RawEvent{path: Some(path), op: Ok(op), cookie}) => {
-        println!("{:?} {:?} ({:?})", op, path, cookie)
+        println!("{:?} {:?} ({:?})", op, path, cookie);
+        match op {
+          op::CREATE => {
+            match File::open(path) {
+              Ok(file) => engine::add(&file),
+              _ => ()
+            }
+          },
+          op::CLOSE_WRITE => {
+            match File::open(path) {
+              Ok(file) => engine::modify(&file),
+              _ => ()
+            }
+          },
+          op::REMOVE => {
+            match File::open(path) {
+              Ok(file) => engine::remove(&file),
+              _ => ()
+            }
+          },
+          op::RENAME => {
+            match File::open(path) {
+              Ok(file) => engine::rename(&file),
+              _ => ()
+            }
+          },
+          _ => {}
+        }
       },
       Ok(event) => println!("broken event: {:?}", event),
       Err(e) => println!("watch error: {:?}", e),

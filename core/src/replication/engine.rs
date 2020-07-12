@@ -1,52 +1,75 @@
-
-
-// Public API
-
 use std::fs::File;
+use std::io::Error;
+use crate::replication::node::find_nodes;
 
-pub fn add(file: File) {
-  queue(QueuedFile::new(file));
+pub fn add(file: &File) {
+  queue(QueuedFile::new(file, Action::Create));
 }
+
+pub fn rename(file: &File) {
+    queue(QueuedFile::new(file, Action::Rename))
+}
+
+pub fn modify(_file: &File) {}
 
 pub fn cat() {}
 
 pub fn get() {}
 
-pub fn remove() {}
+pub fn remove(file: &File) {
+    queue(QueuedFile::new(file, Action::Remove))
+}
 
 // Private API
 
 struct QueuedFile {
     name: String,
-    directory: String,
+    path: String,
     tracking_id: String,
+    action: Action,
     state: QueueState
+}
+
+enum Action {
+    Create,
+    Modify,
+    Rename,
+    Remove,
+    Nothing,
 }
 
 enum QueueState {
     Local,
-    Uploading,
+    Failed,
     Uploaded,
 }
 
 impl QueuedFile { // TODO: Write QueuedFile constructor
-    pub fn new(_file: File) -> QueuedFile {
+    pub fn new(_file: &File, action: Action) -> QueuedFile {
         QueuedFile {
             name: "".to_string(),
-            directory: "".to_string(),
+            path: "".to_string(),
             tracking_id: "".to_string(),
+            action,
             state: QueueState::Local
         }
     }
-    pub fn upload(&mut self) {
-        self.state = QueueState::Uploading
-    }
-    pub fn uploaded(&mut self) {
-        self.state = QueueState::Uploaded
+    pub fn upload(&mut self) -> String { // TODO: Upload file to IPFS and return the key
+        let key = "".to_string();
+        self.state = QueueState::Uploaded;
+        key
     }
 }
 
 fn queue(mut file: QueuedFile) {
     println!("File will be sent to queue... [Yet to implement]");
-    file.upload()
+    match file.action {
+        Action::Create => {
+            find_nodes(file.upload())
+        }
+        Action::Modify => {}
+        Action::Rename => {}
+        Action::Remove => {}
+        Action::Nothing => {}
+    }
 }

@@ -125,7 +125,7 @@ pub fn add(filename: String) -> Result<(), Box<dyn error::Error>> {
     let file = File::open(format!("./{}", filename));
     match file {
         Ok(file) => {
-            engine::add(file);
+            engine::add(&file);
             Ok(())
         },
         Err(e) => Err(Box::new(e))
