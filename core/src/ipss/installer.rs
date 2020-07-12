@@ -1,8 +1,7 @@
 use os_info;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::process::Command;
 use crate::InstallStatus;
-use std::fs;
 
 #[cfg(target_os = "macos")]
 fn run()  -> InstallStatus  {

@@ -1,32 +1,13 @@
-use core::utils::{ipfs};
-use core::ipss;
-use core::ipss::daemon;
-use core::InstallStatus;
+use cli::io::utils;
+use std::{env, process};
 
 fn main() {
-    print_logo();
-    match ipfs::installer::install() {
-        InstallStatus::Installed => {
-            match ipss::installer::install() {
-                InstallStatus::Installed => {
-                    println!("IPSS is already installed.");
-                    daemon::init();
-                },
-                InstallStatus::Error(e) => println!("{}", e)
-            }
-        }
-        InstallStatus::Error(e) => println!("{}", e),
+    let config = utils::Config::new(env::args()).unwrap_or_else(|e| {
+        println!("An error occurred: {}", e);
+        process::exit(1)
+    });
+    if let Err(e) = utils::run(config) {
+        println!("Error: {}", e);
+        process::exit(1)
     }
-}
-
-fn print_logo() {
-    println!("\n
-        ██╗██████╗ ███████╗███████╗
-        ██║██╔══██╗██╔════╝██╔════╝
-        ██║██████╔╝███████╗███████╗
-        ██║██╔═══╝ ╚════██║╚════██║
-        ██║██║     ███████║███████║
-        ╚═╝╚═╝     ╚══════╝╚══════╝
-    \nWelcome to the InterPlanetary Sync System!
-    ")
 }
