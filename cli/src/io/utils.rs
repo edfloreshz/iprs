@@ -1,9 +1,12 @@
-use std::error::Error;
+use std::error;
+use std::io::{Error as ioError, ErrorKind};
 use core::utils::{ipfs};
 use core::ipss;
 use core::ipss::daemon;
 use core::InstallStatus;
 use std::process;
+use std::fs::File;
+use core::replication::engine;
 
 pub struct Config {
     pub action: ActionType,
@@ -58,18 +61,48 @@ impl Config {
     }
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
     match config.action {
-        ActionType::Init => init(),
-        ActionType::Help => help(),
-        ActionType::Add => add(),
-        ActionType::Cat => cat(),
-        ActionType::Get => get(),
-        ActionType::Remove => remove(),
-        ActionType::Daemon => daemon(),
-        ActionType::Unknown => println!("Unknown parameter"),
+        ActionType::Init => { init(); Ok(()) },
+        ActionType::Help => { help(); Ok(()) },
+        ActionType::Add => {
+            match add(config.argument) {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e)
+            }
+        },
+        ActionType::Cat => {
+            match cat() {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e)
+            }
+        },
+        ActionType::Get => {
+            match get() {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e)
+            }
+        },
+        ActionType::Remove => {
+            match remove() {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e)
+            }
+        },
+        ActionType::Daemon => {
+            match daemon() {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e)
+            }
+        },
+        ActionType::Unknown => {
+            Err(
+                Box::new(
+                    ioError::new(ErrorKind::NotFound, "Unknown parameter")
+                )
+            )
+        },
     }
-    Ok(())
 }
 
 pub fn init() {
@@ -88,17 +121,31 @@ pub fn init() {
     }
 }
 
-pub fn add() {}
+pub fn add(filename: String) -> Result<(), Box<dyn error::Error>> {
+    let file = File::open(format!("./{}", filename));
+    match file {
+        Ok(file) => {
+            engine::add(file);
+            Ok(())
+        },
+        Err(e) => Err(Box::new(e))
+    }
+}
 
-pub fn cat() {}
+pub fn cat() -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
-pub fn get() {}
+pub fn get() -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
-pub fn remove() {}
+pub fn remove() -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
-pub fn daemon() { daemon::init() }
+pub fn daemon() -> Result<(), Box<dyn error::Error>> {
+    match daemon::init() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    }
+}
 
-pub fn unknown() {}
+pub fn unknown() -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
 pub fn help() {
     println!("\n

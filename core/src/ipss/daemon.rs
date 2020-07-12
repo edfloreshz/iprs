@@ -1,8 +1,9 @@
+use std::error::Error;
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
 use dirs;
 
-pub fn init() {
+pub fn init() -> Result<(), Box<dyn Error>> {
   println!("Initializing the daemon...");
   // Create a channel to receive the events.
   let (tx, rx) = channel();
