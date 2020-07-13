@@ -1,9 +1,9 @@
 pub mod installer {
   use std::path::Path;
-  use std::fs;
-  use std::io;
-  use std::process::Command;
+  use std::{io, fs};
   use crate::InstallStatus;
+  use std::process::Command;
+  use std::io::{Error, ErrorKind};
 
   pub fn install() -> InstallStatus {
     if !is_installed() {
@@ -43,7 +43,7 @@ pub mod installer {
   }
 
   #[cfg(target_os = "macos")]
-  fn install_ipfs() -> Result<(), String> {
+  fn install_ipfs() -> Result<(), Error> {
     if let Some(dir) = dirs::home_dir() {
       let ipfs_download_path = dir.as_path().display().to_string() + "/.ipss/ipfs/downloads";
       match fs::create_dir_all(&ipfs_download_path) {
@@ -79,21 +79,21 @@ pub mod installer {
                       // }
                       Ok(())
                     },
-                    Err(e) => Err(e.to_string())
+                    Err(e) => Err(e)
                   }
 
                 },
-                Err(e) => Err(e.to_string())
+                Err(e) => Err(e)
               }
 
             },
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(e),
           }
         },
-        Err(e) => Err(e.to_string())
+        Err(e) => Err(e)
       }
     } else {
-      Err("Couldn't find your home directory".to_string())
+      Err(Error::new(ErrorKind::NotFound, "Couldn't find your home directory"))
     }
   }
 
@@ -101,17 +101,77 @@ pub mod installer {
   pub fn is_installed() -> bool {
     match dirs::home_dir() {
       Some(home) => {
-        Path::new(format!("{}\\Apps\\go-ipfs_v0.6.0\\go-ipfs", home).as_str()).exists()
+        let home_dir = home.as_path().display().to_string();
+        Path::new(format!("{}\\Apps\\go-ipfs_v0.6.0\\go-ipfs", home_dir).as_str())
+          .exists()
       },
       None => panic!("We couldn't find your home directory")
     }
   }
+
+  #[cfg(target_os = "windows")]
+  fn install_ipfs() -> Result<(), &'static str> {
+    if let Some(dir) = dirs::home_dir() {
+      let ipfs_download_path = dir.as_path().display().to_string() + "/.ipss/ipfs/downloads";
+      match fs::create_dir_all(&ipfs_download_path) {
+        Ok(_) => {
+          println!("Directory created: {}", ipfs_download_path.as_str());
+          let download = Command::new("cmd")
+            .args(&["/C", "powershell", "wget"])
+            .arg("https://github.com/ipfs/go-ipfs/releases/download/v0.6.0/go-ipfs_v0.6.0_windows-386.zip")
+            .arg("-Outfile")
+            .arg("go-ipfs-v0.6.0.zip")
+            .status();
+          if download.unwrap().success() {
+            println!("Installer downloaded.");
+            let expand = Command::new("powershell")
+              .arg("Expand-Archive")
+              .arg("-Path")
+              .arg("go-ipfs-v0.6.0.zip ")
+              .arg("-DestinationPath")
+              .arg("~\\Apps\\go-ipfs_v0.6.0")
+              .status();
+            if expand.unwrap().success() {
+              if let Some(dir) = dirs::home_dir() {
+                let powershell_profile = dir.as_path().display().to_string() +
+                  "\\Documents\\WindowsPowerShell\\profile.ps1";
+                let install_directory = dir.as_path().display().to_string() +
+                  "\\Apps\\go-ipfs_v0.6.0\\go-ipfs";
+                let install = Command::new("powershell")
+                  .arg("Add-Content")
+                  .arg(&powershell_profile)
+                  .arg(format!("[System.Environment]::SetEnvironmentVariable('PATH',\
+                    `$Env:PATH+';;{})", &install_directory))
+                  .status();
+                if install.unwrap().success() {
+                  Ok(())
+                } else {
+                  Err(Error::new(ErrorKind::Other, "An error occurred during installation."))
+                }
+              } else {
+                Err(Error::new(ErrorKind::NotFound, "We couldn't find your home directory"))
+              }
+            } else {
+              Err(Error::new(ErrorKind::Other, "We couldn't expand the IPFS installer"))
+            }
+          } else {
+            Err(Error::new(ErrorKind::Other, "We couldn't download the IPFS installer"))
+          }
+        },
+        Err(e) => Err(e)
+      }
+    } else {
+      Err(Error::new(ErrorKind::NotFound, "Couldn't find your home directory"))
+    }
+  }
+
   #[cfg(target_os = "linux")]
   pub fn is_installed() -> bool {
     Path::new("/usr/local/bin/ipfs").exists()
   }
+
   #[cfg(target_os = "linux")]
-  fn install_ipfs() -> Result<(), String> {
+  fn install_ipfs() -> Result<(), Error> {
     if let Some(dir) = dirs::home_dir() {
       let ipfs_download_path = dir.as_path().display().to_string() + "/.ipss/ipfs/downloads";
       match fs::create_dir_all(&ipfs_download_path) {
@@ -141,21 +201,21 @@ pub mod installer {
                       // }
                       Ok(())
                     },
-                    Err(e) => Err(e.to_string())
+                    Err(e) => Err(e)
                   }
 
                 },
-                Err(e) => Err(e.to_string())
+                Err(e) => Err(e)
               }
 
             },
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(e),
           }
         },
-        Err(e) => Err(e.to_string())
+        Err(e) => Err(e)
       }
     } else {
-      Err("Couldn't find your home directory".to_string())
+      Err(Error::new(ErrorKind::NotFound, "Couldn't find your home directory"))
     }
   }
 }
