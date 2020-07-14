@@ -14,8 +14,12 @@ The InterPlanetary Sync System or IPSS is a tool which allows users to store and
 
 **IPSS** will run background as a daemon on your personal computer and keep track of every change you make to your file system on supported folders, it will upload every new version of your files and folders to nearby nodes connected to the IPFS network and keep them up to date, you will be able to access them anywhere. Everything you upload will always be available to you.
 
-## Running the project
+## Installing the project
 Install the binary with `cargo install --path .`
+
+Run the binary it with `ipss`
+
+## Installing the project
 
 Run the program it with `cargo run`
 
