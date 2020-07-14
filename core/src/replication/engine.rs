@@ -1,5 +1,4 @@
 use std::fs::File;
-use std::io::Error;
 use crate::replication::node::find_nodes;
 
 pub fn add(file: &File) {
@@ -21,7 +20,7 @@ pub fn remove(file: &File) {
 }
 
 // Private API
-
+#[allow(dead_code)]
 struct QueuedFile {
     name: String,
     path: String,
@@ -29,7 +28,7 @@ struct QueuedFile {
     action: Action,
     state: QueueState
 }
-
+#[allow(dead_code)]
 enum Action {
     Create,
     Modify,
@@ -37,7 +36,7 @@ enum Action {
     Remove,
     Nothing,
 }
-
+#[allow(dead_code)]
 enum QueueState {
     Local,
     Failed,

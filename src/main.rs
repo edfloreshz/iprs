@@ -7,7 +7,7 @@ fn main() {
         process::exit(1)
     });
     if let Err(e) = utils::run(config) {
-        println!("Error: {}", e);
+        println!("error: {}", e.to_string().to_lowercase());
         process::exit(1)
     }
 }
