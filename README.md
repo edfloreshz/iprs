@@ -19,7 +19,7 @@ Install the binary with `cargo install --path .`
 
 Run the binary it with `ipss`
 
-## Installing the project
+## Run the project
 
 Run the program it with `cargo run`
 
