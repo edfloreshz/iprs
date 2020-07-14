@@ -29,12 +29,16 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 
   let signals = Signals::new(&[SIGINT])?;
   thread::spawn(move || {
-    for _ in signals.forever() {
-      println!("\nExiting the daemon...");
-      process::exit(1)
+    for sig in signals.forever() {
+      match sig {
+        2 => {
+          println!("\nExiting the daemon...");
+          process::exit(1)
+        },
+        _ => {}
+      }
     }
   });
-
 
   println!("Waiting for changes...");
   loop {
