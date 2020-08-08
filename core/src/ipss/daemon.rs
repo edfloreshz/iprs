@@ -1,8 +1,10 @@
-use std::fs::File;
+// use std::fs::File;
 use std::sync::mpsc::channel;
-use std::{error::Error, thread, process};
+use std::{error::Error};
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher, op};
 use dirs;
+use std::process;
+use std::thread;
 
 use crate::replication::engine;
 
@@ -49,33 +51,13 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     match rx.recv() {
       Ok(RawEvent { path: Some(path), op: Ok(op), cookie }) => {
         println!("{:?} {:?} ({:?})", op, path, cookie);
-        match op {
-          op::CREATE => {
-            match File::open(path) {
-              Ok(file) => engine::add(&file),
-              _ => ()
-            }
-          },
-          op::CLOSE_WRITE => {
-            match File::open(path) {
-              Ok(file) => engine::modify(&file),
-              _ => ()
-            }
-          },
-          op::REMOVE => {
-            match File::open(path) {
-              Ok(file) => engine::remove(&file),
-              _ => ()
-            }
-          },
-          op::RENAME => {
-            match File::open(path) {
-              Ok(file) => engine::rename(&file),
-              _ => ()
-            }
-          },
-          _ => {}
-        }
+        let _ = match op {
+          op::CREATE => engine::add(&path),
+          op::CLOSE_WRITE => engine::modify(&path),
+          op::REMOVE => engine::remove(&path),
+          op::RENAME => engine::rename(&path),
+          _ => Ok(())
+        };
       },
       Ok(event) => println!("broken event: {:?}", event),
       Err(e) => println!("watch error: {:?}", e),
@@ -110,33 +92,13 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     match rx.recv() {
       Ok(RawEvent { path: Some(path), op: Ok(op), cookie }) => {
         println!("{:?} {:?} ({:?})", op, path, cookie);
-        match op {
-          op::CREATE => {
-            match File::open(path) {
-              Ok(file) => engine::add(&file),
-              _ => ()
-            }
-          },
-          op::CLOSE_WRITE => {
-            match File::open(path) {
-              Ok(file) => engine::modify(&file),
-              _ => ()
-            }
-          },
-          op::REMOVE => {
-            match File::open(path) {
-              Ok(file) => engine::remove(&file),
-              _ => ()
-            }
-          },
-          op::RENAME => {
-            match File::open(path) {
-              Ok(file) => engine::rename(&file),
-              _ => ()
-            }
-          },
-          _ => {}
-        }
+        let _ = match op {
+          op::CREATE => engine::add(&path),
+          op::CLOSE_WRITE => engine::modify(&path),
+          op::REMOVE => engine::remove(&path),
+          op::RENAME => engine::rename(&path),
+          _ => Ok(())
+        };
       },
       Ok(event) => println!("broken event: {:?}", event),
       Err(e) => println!("watch error: {:?}", e),

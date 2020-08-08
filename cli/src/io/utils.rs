@@ -1,11 +1,12 @@
-use std::error;
+  use std::error;
 use std::io::{Error as ioError, ErrorKind};
 use core::ipss;
 use core::ipss::daemon;
 use core::InstallStatus;
 use std::process;
-use std::fs::File;
+// use std::fs::File;
 use core::replication::engine;
+use std::path::Path;
 
 pub struct Config {
   pub action: ActionType,
@@ -48,7 +49,10 @@ impl Config {
       help()
     }
     match action {
-      Action::Single(action_type) => Ok(Config { action: action_type, argument: String::new() }),
+      Action::Single(action_type) => Ok(Config {
+        action: action_type,
+        argument: String::new()
+      }),
       Action::Multiple(action_type) => {
         if let Some(argument) = args.next() {
           Ok(Config { action: action_type, argument })
@@ -68,71 +72,51 @@ impl Config {
   }
 }
 
+
+pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
+  match config.action {
+    ActionType::Init => Ok(init()),
+    ActionType::Help => Ok(help()),
+    ActionType::Add => match add(config.argument) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    },
+    ActionType::Cat => match cat() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    },
+    ActionType::Get => match get() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    },
+    ActionType::Remove => match remove() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    },
+    ActionType::Daemon => match daemon() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e)
+    },
+    ActionType::Unknown(arg) =>
+      Err(Box::new(ioError::new(
+        ErrorKind::NotFound,
+        format!("no such subcommand: {}", arg)
+      ))),
+  }
+}
+
 pub fn init() {
   match ipss::installer::install() {
-    InstallStatus::Installed => {
-      println!("IPSS is already initialized\
-      \nRun 'ipss daemon' to start the daemon");
-    },
+    InstallStatus::Installed =>
+      println!("IPSS is already initialized \nRun 'ipss daemon' to start the daemon"),
     InstallStatus::Error(e) => println!("{}", e)
   }
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
-  match config.action {
-    ActionType::Init => { init(); Ok(()) },
-    ActionType::Help => { help(); Ok(()) },
-    ActionType::Add => {
-      match add(config.argument) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-      }
-    },
-    ActionType::Cat => {
-      match cat() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-      }
-    },
-    ActionType::Get => {
-      match get() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-      }
-    },
-    ActionType::Remove => {
-      match remove() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-      }
-    },
-    ActionType::Daemon => {
-      match daemon() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-      }
-    },
-    ActionType::Unknown(arg) => {
-      Err(
-        Box::new(
-          ioError::new(
-            ErrorKind::NotFound,
-            format!("no such subcommand: {}", arg))
-        )
-      )
-    },
-  }
-}
-
 pub fn add(filename: String) -> Result<(), Box<dyn error::Error>> {
-  let file = File::open(format!("./{}", filename));
-  match file {
-    Ok(file) => {
-      engine::add(&file);
-      Ok(())
-    },
-    Err(e) => Err(Box::new(e))
-  }
+  let pathname = format!("./{}", filename).to_string();
+  let path = Path::new(pathname.as_str());
+  engine::add(&path)
 }
 
 pub fn cat() -> Result<(), Box<dyn error::Error>> { Ok(()) }
@@ -167,8 +151,8 @@ USAGE
 
 SUBCOMMANDS
   BASIC COMMANDS
-    init [-i]       Initialize ipss local configuration. [Partially Implemented]
-    add <path>      Add a file to IPFS and sync it with IPSS. [Not Implemented]
+    init [-i]       Initialize ipss local configuration.
+    add <path>      Add a file to IPFS and sync it with IPSS. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
     get <ref>       Download IPFS objects stores in IPSS. [Not Implemented]
     remove <ref>    Remove IPFS objects from IPSS. [Not Implemented]
