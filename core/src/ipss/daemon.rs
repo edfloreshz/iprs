@@ -1,6 +1,6 @@
 // use std::fs::File;
 use std::sync::mpsc::channel;
-use std::{error::Error};
+use std::error::Error;
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher, op};
 use dirs;
 use std::process;
@@ -39,7 +39,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
       match sig {
         2 => {
           println!("\nExiting the daemon...");
-          process::exit(1)
+          process::exit(0)
         },
         _ => {}
       }

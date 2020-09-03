@@ -1,4 +1,4 @@
-  use std::error;
+use std::error;
 use std::io::{Error as ioError, ErrorKind};
 use core::ipss;
 use core::ipss::daemon;
@@ -58,7 +58,7 @@ impl Config {
           Ok(Config { action: action_type, argument })
         } else {
           help();
-          process::exit(1)
+          process::exit(0)
         }
       },
       Action::Error(ActionType::Unknown(arg)) => {
@@ -158,5 +158,5 @@ SUBCOMMANDS
     remove <ref>    Remove IPFS objects from IPSS. [Not Implemented]
 ADVANCED COMMANDS
   daemon            Start a long-running daemon process. [Partially Implemented]");
-  process::exit(1)
+  process::exit(0)
 }
