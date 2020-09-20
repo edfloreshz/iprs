@@ -1,19 +1,20 @@
 use std::path::{Path};
 use std::process::Command;
 use crate::InstallStatus;
+use crate::errors::custom::CustomError;
 
 pub fn install() -> InstallStatus {
   if ipss_installed() {
-    InstallStatus::Installed
+    InstallStatus::Installed("IPSS is already initialized \nRun 'ipss daemon' to start the \
+    daemon".to_string())
   } else {
     let install = Command::new("cargo")
       .args(&["install", "--path", "."])
       .status();
     if install.unwrap().success() {
-      println!("\nIPSS is now installed");
-      InstallStatus::Installed
+      InstallStatus::Installed("\nIPSS is now installed".to_string())
     } else {
-      InstallStatus::Error(format!("We weren't able to install IPSS."))
+      InstallStatus::Error(CustomError::new("We weren't able to install IPSS.".to_string()))
     }
   }
 }

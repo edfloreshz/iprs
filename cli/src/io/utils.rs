@@ -1,12 +1,11 @@
 use std::error;
-use std::io::{Error as ioError, ErrorKind};
 use core::ipss;
 use core::ipss::daemon;
 use core::InstallStatus;
 use std::process;
-// use std::fs::File;
 use core::replication::engine;
 use std::path::Path;
+use core::errors::custom::CustomError;
 
 pub struct Config {
   pub action: ActionType,
@@ -72,67 +71,43 @@ impl Config {
   }
 }
 
-
 pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
   match config.action {
-    ActionType::Init => Ok(init()),
+    ActionType::Init => init(),
     ActionType::Help => Ok(help()),
-    ActionType::Add => match add(config.argument) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-    },
-    ActionType::Cat => match cat() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-    },
-    ActionType::Get => match get() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-    },
-    ActionType::Remove => match remove() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-    },
-    ActionType::Daemon => match daemon() {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e)
-    },
-    ActionType::Unknown(arg) =>
-      Err(Box::new(ioError::new(
-        ErrorKind::NotFound,
-        format!("no such subcommand: {}", arg)
-      ))),
+    ActionType::Add => add(config.argument),
+    ActionType::Cat => cat(config.argument),
+    ActionType::Get => get(config.argument),
+    ActionType::Remove => remove(),
+    ActionType::Daemon => daemon(),
+    ActionType::Unknown(arg) => unknown(arg),
   }
 }
 
-pub fn init() {
+pub fn init() -> Result<(), Box<dyn error::Error>> {
   match ipss::installer::install() {
-    InstallStatus::Installed =>
-      println!("IPSS is already initialized \nRun 'ipss daemon' to start the daemon"),
-    InstallStatus::Error(e) => println!("{}", e)
+    InstallStatus::Installed(msg) => Ok(println!("{}", msg)),
+    InstallStatus::Error(e) => Err(e)
   }
 }
 
 pub fn add(filename: String) -> Result<(), Box<dyn error::Error>> {
-  let pathname = format!("./{}", filename).to_string();
-  let path = Path::new(pathname.as_str());
-  engine::add(&path)
+  engine::add(&Path::new("./").join(filename).as_path())
 }
 
-pub fn cat() -> Result<(), Box<dyn error::Error>> { Ok(()) }
+pub fn cat(filename: String) -> Result<(), Box<dyn error::Error>> {
+  engine::cat(&Path::new("./").join(filename).as_path())
+}
 
-pub fn get() -> Result<(), Box<dyn error::Error>> { Ok(()) }
+pub fn get(_id: String) -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
 pub fn remove() -> Result<(), Box<dyn error::Error>> { Ok(()) }
 
-pub fn daemon() -> Result<(), Box<dyn error::Error>> {
-  match daemon::init() {
-    Ok(_) => Ok(()),
-    Err(e) => Err(e)
-  }
-}
+pub fn daemon() -> Result<(), Box<dyn error::Error>> { daemon::init() }
 
-pub fn unknown() -> Result<(), Box<dyn error::Error>> { Ok(()) }
+pub fn unknown(arg: String) -> Result<(), Box<dyn error::Error>> {
+  Err(CustomError::new(format!("no such subcommand: {}", arg)))
+}
 
 pub fn help() {
   println!("\n

@@ -1,26 +1,30 @@
-use std::fs::File;
-use crate::replication::node::find_nodes;
 use std::error;
+use std::fs::File;
+use std::io::{BufReader, BufRead};
 use std::path::Path;
 
 pub fn add(path: &Path) -> Result<(), Box<dyn error::Error>> {
-  let file = File::open(path);
-  match file {
-    Ok(file) => Ok(queue(QueuedFile::new(&path, Action::Create), &file)),
-    Err(e) => Err(Box::new(e))
-  }
+  queue(QueuedFile::new(&path, Action::Create))
 }
 
-pub fn rename(_path: &Path) -> Result<(), Box<dyn error::Error>> {
-  // Ok(queue(QueuedFile::new(path, Action::Rename)))
-  Ok(())
+pub fn rename(path: &Path) -> Result<(), Box<dyn error::Error>> {
+  queue(QueuedFile::new(path, Action::Rename))
 }
 
 pub fn modify(_path: &Path) -> Result<(), Box<dyn error::Error>> {
   Ok(())
 }
 
-pub fn cat() {}
+pub fn cat(path: &Path) -> Result<(), Box<dyn error::Error>> {
+  match File::open(path) {
+    Ok(file) => {
+      Ok(for line in BufReader::new(file).lines() {
+        println!("{}", line.unwrap())
+      })
+    },
+    Err(e) => Err(Box::new(e))
+  }
+}
 
 pub fn get() {}
 
@@ -67,10 +71,16 @@ impl QueuedFile<'_> {
       state: QueueState::Local
     }
   }
-  pub fn upload(&mut self, _file: &File) -> String { // TODO: Upload file to IPFS and return the key
-    let key = "".to_string();
-    self.state = QueueState::Uploaded;
-    key
+  pub fn upload(&mut self) -> Result<(), Box<dyn error::Error>> {
+    let file = File::open(self.path);
+    match file {
+      Ok(_file) => {
+        //TODO: Upload file
+        self.state = QueueState::Uploaded;
+        Ok(())
+      } ,
+      Err(e) => Err(Box::new(e))
+    }
   }
 
 }
@@ -79,15 +89,13 @@ pub fn generate_tracking_id() -> String { // TODO: Generate tracking ID for file
   String::new()
 }
 
-fn queue(mut queued_file: QueuedFile, file: &File) {
+fn queue(mut queued_file: QueuedFile) -> Result<(), Box<dyn error::Error>> {
   println!("File will be sent to queue... [Yet to implement]");
   match queued_file.action {
-    Action::Create => {
-      find_nodes(queued_file.upload(file))
-    }
-    Action::Modify => {}
-    Action::Rename => {}
-    Action::Remove => {}
-    Action::Nothing => {}
+    Action::Create => queued_file.upload(),
+    Action::Modify => Ok(()),
+    Action::Rename => Ok(()),
+    Action::Remove => Ok(()),
+    Action::Nothing => Ok(()),
   }
 }
