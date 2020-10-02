@@ -3,7 +3,9 @@ use std::sync::mpsc::channel;
 use std::error::Error;
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher, op};
 use dirs;
+#[cfg(not(target_os = "windows"))]
 use std::process;
+#[cfg(not(target_os = "windows"))]
 use std::thread;
 
 use crate::replication::engine;
