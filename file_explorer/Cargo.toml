@@ -6,10 +6,12 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies.gtk]
-version = "0.9.0"
-features = ["v3_16"]
+[dependencies]
+cpp_core = "0.6.0"
+qt_core = "0.5.0"
+qt_gui = "0.5.0"
+qt_widgets = "0.5.0"
+qt_ui_tools = "0.5.0"
 
-[dependencies.gio]
-version = ""
-features = ["v2_44"]
+[build-dependencies]
+qt_ritual_build = "0.5.0"

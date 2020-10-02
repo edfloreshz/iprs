@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 cli = { path = "cli" }
+file_explorer = { path = "file_explorer" }
