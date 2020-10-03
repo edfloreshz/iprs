@@ -1,7 +1,6 @@
 use std::error;
 use core::ipss;
 use core::ipss::daemon;
-use core::InstallStatus;
 use std::process;
 use core::replication::engine;
 use std::path::Path;
@@ -85,9 +84,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
 }
 
 pub fn init() -> Result<(), Box<dyn error::Error>> {
-  match ipss::installer::install() {
-    InstallStatus::Installed(msg) => Ok(println!("{}", msg)),
-    InstallStatus::Error(e) => Err(e)
+  match ipss::configuration::initialize() {
+    Ok(()) => Ok(println!("Configuration initialized correctly.")),
+    _ => Err(CustomError::new("Failed to create configuration folder.".to_string()))
   }
 }
 

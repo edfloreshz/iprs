@@ -3,6 +3,7 @@
 /target/
 /core/target/
 /cli/target/
+/file_explorer/target/
 .DS_Store
 .idea
 
