@@ -24,9 +24,8 @@ To uninstall run `./uninstall.sh`
 ## Installing with cargo
 Install the binary with `cargo install --path .`
 
-Run the binary it with `ipss`
-
 ## Run the project
+Run the binary with `ipss`
 
 Run the program it with `cargo run`
 
