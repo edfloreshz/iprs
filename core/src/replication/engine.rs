@@ -1,99 +1,94 @@
-use std::error;
+use crate::{Action, QueueState};
 use std::fs::File;
-use std::io::{BufReader, BufRead};
-use std::path::Path;
+use std::io::{BufRead, BufReader};
+use std::path::{PathBuf, Path};
+use std::{error, fmt, env};
+use nanoid::nanoid;
 
-#[allow(dead_code)]
-struct QueuedFile<'a> {
-  name: String,
-  path: &'a Path,
-  tracking_id: String,
-  action: Action,
-  state: QueueState
+#[derive(Clone)]
+pub struct QueuedFile {
+    name: String,
+    path: PathBuf,
+    tracking_id: String,
+    action: Action,
+    state: QueueState,
 }
 
-impl QueuedFile<'_> {
-  pub fn new(path: &Path, action: Action) -> QueuedFile {
-    let name= match path.file_name() {
-      Some(filename) => filename.to_string_lossy().to_string(),
-      None => panic!("Couldn't get filename!")
-    };
-    QueuedFile {
-      name,
-      path,
-      tracking_id: generate_tracking_id(),
-      action,
-      state: QueueState::Local
+impl QueuedFile {
+    pub fn new(path: PathBuf, action: Action) -> QueuedFile {
+        let name = match path.file_name() {
+            Some(filename) => filename.to_string_lossy().to_string(),
+            None => panic!("Couldn't get filename!"),
+        };
+        QueuedFile {
+            name,
+            path,
+            tracking_id: generate_tracking_id(),
+            action,
+            state: QueueState::Local,
+        }
     }
-  }
-  pub fn upload(&mut self) -> Result<(), Box<dyn error::Error>> {
-    let file = File::open(self.path);
-    match file {
-      Ok(_file) => {
-        //TODO: Upload file
-        self.state = QueueState::Uploaded;
-        Ok(())
-      } ,
-      Err(e) => Err(Box::new(e))
+    pub fn upload(&mut self) -> Result<(), Box<dyn error::Error>> {
+        let file = File::open(&self.path);
+        match file {
+            Ok(..) => {
+                //TODO: Upload file
+                self.state = QueueState::Uploaded;
+                println!("{}", self);
+                Ok(())
+            }
+            Err(e) => Err(Box::new(e)),
+        }
     }
-  }
-}
-#[allow(dead_code)]
-enum Action {
-  Create,
-  Modify,
-  Rename,
-  Remove,
-  Nothing,
-}
-#[allow(dead_code)]
-enum QueueState {
-  Local,
-  Failed,
-  Uploaded,
 }
 
-fn queue(mut queued_file: QueuedFile) -> Result<(), Box<dyn error::Error>> {
-  println!("File will be sent to queue... [Yet to implement]");
-  match queued_file.action {
-    Action::Create => queued_file.upload(),
-    Action::Modify => Ok(()),
-    Action::Rename => Ok(()),
-    Action::Remove => Ok(()),
-    Action::Nothing => Ok(()),
-  }
+impl fmt::Display for QueuedFile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Queue file: ( \n    name: {}, \n    path: {}, \n    id: {}, \n    action: {}, \n    state: {}\n)",
+            self.name,
+            self.path.to_str().unwrap(),
+            self.tracking_id,
+            self.action,
+            self.state
+        )
+    }
 }
 
-pub fn add(path: &Path) -> Result<(), Box<dyn error::Error>> {
-  queue(QueuedFile::new(&path, Action::Create))
+pub fn add(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+    for file in input.iter() {
+        let path = Path::new(&env::current_dir()?).join(file);
+        println!("Uploading {}", path.display());
+        let mut queued_file = QueuedFile::new(path, Action::Create);
+        queued_file.upload()?
+    }
+    Ok(())
 }
 
-pub fn rename(path: &Path) -> Result<(), Box<dyn error::Error>> {
-  queue(QueuedFile::new(path, Action::Rename))
+pub fn get(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+    for file in input.iter() {
+        println!("Getting {}", file)
+    }
+    Ok(())
 }
 
-pub fn modify(_path: &Path) -> Result<(), Box<dyn error::Error>> {
-  Ok(())
+pub fn remove(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+    for file in input.iter() {
+        println!("Removing {}", file)
+    }
+    Ok(())
 }
 
-pub fn cat(path: &Path) -> Result<(), Box<dyn error::Error>> {
-  match File::open(path) {
-    Ok(file) => {
-      Ok(for line in BufReader::new(file).lines() {
-        println!("{}", line.unwrap())
-      })
-    },
-    Err(e) => Err(Box::new(e))
-  }
+pub fn cat(path: PathBuf) -> Result<(), Box<dyn error::Error>> {
+    match File::open(path) {
+        Ok(file) => Ok(for line in BufReader::new(file).lines() {
+            println!("{}", line.unwrap())
+        }),
+        Err(e) => Err(Box::new(e)),
+    }
 }
 
-pub fn get() {}
-
-pub fn remove(_path: &Path) -> Result<(), Box<dyn error::Error>> {
-  // Ok(queue(QueuedFile::new(path, Action::Remove)))
-  Ok(())
-}
-
-pub fn generate_tracking_id() -> String { // TODO: Generate tracking ID for files.
-  String::new()
+pub fn generate_tracking_id() -> String {
+  nanoid!(10)
 }

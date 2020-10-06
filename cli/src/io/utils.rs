@@ -3,104 +3,128 @@ use core::ipss;
 use core::ipss::daemon;
 use std::process;
 use core::replication::engine;
-use std::path::Path;
+use std::path::{Path};
 use core::errors::custom::CustomError;
 
 pub struct Config {
-  pub action: ActionType,
-  pub argument: String
+  pub config: Command,
 }
 
-enum Action {
-  Single(ActionType),
-  Multiple(ActionType),
-  Error(ActionType)
-}
-
-pub enum ActionType {
-  Init,
+pub enum Command {
   Help,
-  Add,
-  Cat,
-  Get,
-  Remove,
-  Daemon,
+  Init(Options),
+  Add(Options),
+  Cat(Options),
+  Get(Options),
+  Remove(Options),
+  Daemon(Options),
   Unknown(String)
 }
 
+#[derive(Clone)]
+pub struct Options {
+  force: bool,
+  input: Option<Vec<String>>
+}
+
+impl Options {
+  fn new(force: bool, input: Option<Vec<String>>) -> Options {
+    Options { force, input }
+  }
+}
+
 impl Config {
-  pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+  pub fn new(mut args: std::env::Args) -> Result<Config, Box<dyn error::Error>> {
     args.next();
-    let mut action = Action::Single(ActionType::Unknown("".to_string()));
-    if let Some(arg) = args.next() {
-      action = match arg.as_str() {
-        "init" | "-i" => Action::Single(ActionType::Init),
-        "help" | "-h" | "--help" => Action::Single(ActionType::Help),
-        "add" => Action::Multiple(ActionType::Add),
-        "cat" => Action::Multiple(ActionType::Cat),
-        "get" => Action::Multiple(ActionType::Get),
-        "remove" => Action::Multiple(ActionType::Remove),
-        "daemon" => Action::Single(ActionType::Daemon),
-        _ => Action::Error(ActionType::Unknown(arg.to_string()))
-      }
-    } else {
-      help()
+    let mut subcommand = String::new();
+    let input = Some(vec![]);
+    let mut options= Options::new(false, input.clone());
+    let mut arguments= vec![];
+
+    match args.next() {
+      Some(arg) => subcommand = arg,
+      None => help()
     }
-    match action {
-      Action::Single(action_type) => Ok(Config {
-        action: action_type,
-        argument: String::new()
-      }),
-      Action::Multiple(action_type) => {
-        if let Some(argument) = args.next() {
-          Ok(Config { action: action_type, argument })
-        } else {
-          help();
-          process::exit(0)
+    match subcommand.as_str() {
+      "help" => Ok(Config { config: Command::Help}),
+      _ => {
+        while let Some(arg) = args.next() {
+          arguments.push(arg)
         }
-      },
-      Action::Error(ActionType::Unknown(arg)) => {
-        Ok(Config {
-          action: ActionType::Unknown(arg.to_string()),
-          argument: arg
-        })
-      },
-      _ => panic!("Unhandled errors.")
+        let mut options_args = arguments.clone();
+        options_args.retain(|arg| arg.starts_with("-"));
+        let mut input_arguments = arguments.clone();
+        input_arguments.retain(|arg| !arg.starts_with("-"));
+        // if options_args.is_empty() && input_arguments.is_empty() {
+        //   return Err(CustomError::new("None of the options provided are valid.".to_string()))
+        // }
+        if options_args.contains(&"-f".to_string()) { options.force = true }
+        options.input = Some(input_arguments);
+        match subcommand.as_str() {
+          "init" => Ok(Config { config: Command::Init(options.clone())}),
+          "add" => Ok(Config { config: Command::Add(options.clone())}),
+          "cat" => Ok(Config { config: Command::Cat(options.clone())}),
+          "get" => Ok(Config { config: Command::Get(options.clone())}),
+          "remove" => Ok(Config { config: Command::Remove(options.clone())}),
+          "daemon" => Ok(Config { config: Command::Daemon(options.clone())}),
+          _ => Ok(Config { config: Command::Unknown(subcommand.to_string())})
+        }
+      }
     }
   }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
-  match config.action {
-    ActionType::Init => init(),
-    ActionType::Help => Ok(help()),
-    ActionType::Add => add(config.argument),
-    ActionType::Cat => cat(config.argument),
-    ActionType::Get => get(config.argument),
-    ActionType::Remove => remove(),
-    ActionType::Daemon => daemon(),
-    ActionType::Unknown(arg) => unknown(arg),
+  match config.config {
+    Command::Init(options)    => init(options),
+    Command::Help => Ok(help()),
+    Command::Add(options)     => add(options),
+    Command::Cat(options)     => cat(options),
+    Command::Get(options)     => get(options),
+    Command::Remove(options)  => remove(options),
+    Command::Daemon(_)                => daemon(),
+    Command::Unknown(arg)       => unknown(arg),
   }
 }
 
-pub fn init() -> Result<(), Box<dyn error::Error>> {
-  match ipss::configuration::initialize() {
+pub fn init(options: Options) -> Result<(), Box<dyn error::Error>> {
+  match ipss::configuration::initialize(options.force) {
     Ok(()) => Ok(println!("Configuration initialized correctly.")),
-    _ => Err(CustomError::new("Failed to create configuration folder.".to_string()))
+    Err(e) => Err(e)
   }
 }
 
-pub fn add(filename: String) -> Result<(), Box<dyn error::Error>> {
-  engine::add(&Path::new("./").join(filename).as_path())
+pub fn add(options: Options) -> Result<(), Box<dyn error::Error>> {
+  match options.input {
+    Some(input) => engine::add(input),
+    None => Err(CustomError::new("No input was provided.".to_string()))
+  }
 }
 
-pub fn cat(filename: String) -> Result<(), Box<dyn error::Error>> {
-  engine::cat(&Path::new("./").join(filename).as_path())
+pub fn cat(options: Options) -> Result<(), Box<dyn error::Error>> {
+  match options.input {
+    Some(input) => if input.len() == 1 {
+      engine::cat(Path::new("./").join(input[0].clone()))
+    } else {
+      Err(CustomError::new("More than one file was provided.".to_string()))
+    },
+    None => Err(CustomError::new("No input was provided".to_string()))
+  }
 }
 
-pub fn get(_id: String) -> Result<(), Box<dyn error::Error>> { Ok(()) }
+pub fn get(options: Options) -> Result<(), Box<dyn error::Error>> {
+  match options.input {
+    Some(input) => engine::get(input),
+    None => Err(CustomError::new("No input was provided.".to_string()))
+  }
+}
 
-pub fn remove() -> Result<(), Box<dyn error::Error>> { Ok(()) }
+pub fn remove(options: Options) -> Result<(), Box<dyn error::Error>> {
+  match options.input {
+    Some(input) => engine::remove(input),
+    None => Err(CustomError::new("No input was provided.".to_string()))
+  }
+}
 
 pub fn daemon() -> Result<(), Box<dyn error::Error>> { daemon::init() }
 
@@ -121,11 +145,11 @@ Welcome to the InterPlanetary Sync System! \n
 USAGE
   ipss - Global p2p file replication system
 
-  ipfs [help] [--help] [-h] <command> ...
+  ipfs help - Show subcommands.
 
 SUBCOMMANDS
   BASIC COMMANDS
-    init [-i]       Initialize ipss local configuration.
+    init [-f]       Initialize ipss local configuration. [-f] to force reinitialization.
     add <path>      Add a file to IPFS and sync it with IPSS. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
     get <ref>       Download IPFS objects stores in IPSS. [Not Implemented]
