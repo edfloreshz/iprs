@@ -123,21 +123,50 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         watcher.watch(dir, RecursiveMode::Recursive).unwrap();
     }
 
+    let mut file_queue: Queue<QueuedFile> = Queue::new();
     println!("Waiting for changes...");
-    loop {
+    loop { // TODO: The tracking ID is generated for each event, need to retrieve the ID from the database in order to keep track of the files.
         match rx.recv() {
             Ok(RawEvent {
-                path: Some(path),
-                op: Ok(op),
-                cookie,
-            }) => {
+                   path: Some(path),
+                   op: Ok(op),
+                   cookie,
+               }) => {
                 println!("{:?} {:?} ({:?})", op, path, cookie);
-                let _ = match op {
-                    op::CREATE => engine::add(&path),
-                    op::CLOSE_WRITE => engine::modify(&path),
-                    op::REMOVE => engine::remove(&path),
-                    op::RENAME => engine::rename(&path),
-                    _ => Ok(()),
+                match op {
+                    op::CREATE => {
+                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
+                                                                         Action::Create)) {
+                            if let Some(item) = file_queue.dequeue() {
+                                println!("{}", item)
+                            }
+                        }
+                    }
+                    op::CLOSE_WRITE => {
+                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
+                                                                         Action::Modify)) {
+                            if let Some(item) = file_queue.dequeue() {
+                                println!("{}", item)
+                            }
+                        }
+                    }
+                    op::REMOVE => {
+                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
+                                                                         Action::Remove)) {
+                            if let Some(item) = file_queue.dequeue() {
+                                println!("{}", item)
+                            }
+                        }
+                    }
+                    op::RENAME => {
+                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
+                                                                         Action::Rename)) {
+                            if let Some(item) = file_queue.dequeue() {
+                                println!("{}", item)
+                            }
+                        }
+                    }
+                    _ => println!("Unhandled event"),
                 };
             }
             Ok(event) => println!("broken event: {:?}", event),

@@ -12,6 +12,7 @@ pub struct Config {
 
 pub enum Command {
   Help,
+  Version,
   Init(Options),
   Add(Options),
   Cat(Options),
@@ -47,6 +48,7 @@ impl Config {
     }
     match subcommand.as_str() {
       "help" => Ok(Config { config: Command::Help}),
+      "version" => Ok(Config {config: Command::Version}),
       _ => {
         while let Some(arg) = args.next() {
           arguments.push(arg)
@@ -78,6 +80,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
   match config.config {
     Command::Init(options)    => init(options),
     Command::Help => Ok(help()),
+    Command::Version => Ok(version()),
     Command::Add(options)     => add(options),
     Command::Cat(options)     => cat(options),
     Command::Get(options)     => get(options),
@@ -127,6 +130,10 @@ pub fn remove(options: Options) -> Result<(), Box<dyn error::Error>> {
 }
 
 pub fn daemon() -> Result<(), Box<dyn error::Error>> { daemon::init() }
+
+pub fn version() {
+  println!("IPSS v0.1.1")
+}
 
 pub fn unknown(arg: String) -> Result<(), Box<dyn error::Error>> {
   Err(CustomError::new(format!("no such subcommand: {}", arg)))
