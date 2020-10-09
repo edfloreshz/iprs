@@ -1,2 +1,2 @@
-pub mod daemon;
 pub mod configuration;
+pub mod daemon;

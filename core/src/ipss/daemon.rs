@@ -51,7 +51,8 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 
     let mut file_queue: Queue<QueuedFile> = Queue::new();
     println!("Waiting for changes...");
-    loop { // TODO: The tracking ID is generated for each event, need to retrieve the ID from the database in order to keep track of the files.
+    loop {
+        // TODO: The tracking ID is generated for each event, need to retrieve the ID from the database in order to keep track of the files.
         match rx.recv() {
             Ok(RawEvent {
                 path: Some(path),
@@ -61,32 +62,36 @@ pub fn init() -> Result<(), Box<dyn Error>> {
                 println!("{:?} {:?} ({:?})", op, path, cookie);
                 match op {
                     op::CREATE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Create)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Create))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::CLOSE_WRITE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Modify)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Modify))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::REMOVE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Remove)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Remove))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::RENAME => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Rename)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Rename))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
@@ -125,42 +130,47 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 
     let mut file_queue: Queue<QueuedFile> = Queue::new();
     println!("Waiting for changes...");
-    loop { // TODO: The tracking ID is generated for each event, need to retrieve the ID from the database in order to keep track of the files.
+    loop {
+        // TODO: The tracking ID is generated for each event, need to retrieve the ID from the database in order to keep track of the files.
         match rx.recv() {
             Ok(RawEvent {
-                   path: Some(path),
-                   op: Ok(op),
-                   cookie,
-               }) => {
+                path: Some(path),
+                op: Ok(op),
+                cookie,
+            }) => {
                 println!("{:?} {:?} ({:?})", op, path, cookie);
                 match op {
                     op::CREATE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Create)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Create))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::CLOSE_WRITE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Modify)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Modify))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::REMOVE => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Remove)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Remove))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }
                         }
                     }
                     op::RENAME => {
-                        if let Ok(..) = file_queue.queue(QueuedFile::new(path.clone(),
-                                                                         Action::Rename)) {
+                        if let Ok(..) =
+                            file_queue.queue(QueuedFile::new(path.clone(), Action::Rename))
+                        {
                             if let Some(item) = file_queue.dequeue() {
                                 println!("{}", item)
                             }

@@ -1,9 +1,9 @@
 use crate::{Action, QueueState};
+use nanoid::nanoid;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::{PathBuf, Path};
-use std::{error, fmt, env};
-use nanoid::nanoid;
+use std::path::{Path, PathBuf};
+use std::{env, error, fmt};
 
 #[derive(Clone)]
 pub struct QueuedFile {
@@ -56,7 +56,7 @@ impl fmt::Display for QueuedFile {
     }
 }
 
-pub fn add(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+pub fn add(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
     for file in input.iter() {
         let path = Path::new(&env::current_dir()?).join(file);
         println!("Uploading {}", path.display());
@@ -66,14 +66,14 @@ pub fn add(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
     Ok(())
 }
 
-pub fn get(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+pub fn get(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
     for file in input.iter() {
         println!("Getting {}", file)
     }
     Ok(())
 }
 
-pub fn remove(input: Vec<String>) -> Result<(), Box<dyn error::Error>>{
+pub fn remove(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
     for file in input.iter() {
         println!("Removing {}", file)
     }
@@ -90,5 +90,5 @@ pub fn cat(path: PathBuf) -> Result<(), Box<dyn error::Error>> {
 }
 
 pub fn generate_tracking_id() -> String {
-  nanoid!(10)
+    nanoid!(10)
 }

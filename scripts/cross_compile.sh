@@ -48,7 +48,7 @@ if sudo rm -rf /usr/local/bin/ipss; then
 else
     echo \"Something went wrong.\"
 fi" > release/ipss.$IPSSVER-x86_64-apple-darwin-alpha/uninstall.command
-echo "Remove-Item Path \$HOME\.ipss\ipss.exe -Recurse
+echo "Remove-Item -Path \$HOME\.ipss\ipss.exe -Recurse
 echo \"IPSS is now uninstalled.\"
 pause" > release/ipss.$IPSSVER-x86_64-windows-gnu-alpha/uninstall.ps1
 
