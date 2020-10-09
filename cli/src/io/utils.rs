@@ -156,6 +156,7 @@ USAGE
 
 SUBCOMMANDS
   BASIC COMMANDS
+    version         Prints the current version.
     init [-f]       Initialize ipss local configuration. [-f] to force reinitialization.
     add <path>      Add a file to IPFS and sync it with IPSS. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
