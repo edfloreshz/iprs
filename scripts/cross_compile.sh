@@ -52,6 +52,8 @@ echo "Remove-Item Path $HOME\.ipss\ipss.exe -Recurse
 echo \"IPSS is now uninstalled.\"
 pause" > release/ipss.$IPSSVER-x86_64-windows-gnu-alpha/uninstall.ps1
 
+chmod -R 755 release/
+
 zip -r release/ipss.$IPSSVER-x86_64-linux-gnu-alpha.zip release/ipss.$IPSSVER-x86_64-linux-gnu-alpha
 zip -r release/ipss.$IPSSVER-x86_64-apple-darwin-alpha.zip release/ipss.$IPSSVER-x86_64-apple-darwin-alpha
 zip -r release/ipss.$IPSSVER-x86_64-windows-gnu-alpha.zip release/ipss.$IPSSVER-x86_64-windows-gnu-alpha
