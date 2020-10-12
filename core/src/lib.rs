@@ -4,6 +4,9 @@ pub mod errors;
 pub mod ipss;
 pub mod replication;
 
+use std::error;
+type Result<T> = std::result::Result<T, Box<dyn error::Error + 'static>>;
+
 #[derive(Clone)]
 pub enum Action {
     Create,

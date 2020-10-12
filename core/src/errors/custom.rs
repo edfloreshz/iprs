@@ -8,16 +8,16 @@ pub struct CustomError {
 }
 
 impl CustomError {
-    pub fn new(msg: String) -> Box<CustomError> {
+    pub fn new(msg: &str) -> Box<CustomError> {
         Box::new(CustomError {
-            msg,
+            msg: msg.to_string(),
             side: CustomErrorSide,
         })
     }
 }
 
 impl fmt::Display for CustomError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.msg)
     }
 }

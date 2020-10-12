@@ -1,8 +1,9 @@
+use crate::Result;
 use core::errors::custom::CustomError;
 use core::ipss;
 use core::ipss::daemon;
 use core::replication::engine;
-use std::error;
+use std::env::Args;
 use std::path::Path;
 use std::process;
 
@@ -35,13 +36,9 @@ impl Options {
 }
 
 impl Config {
-    pub fn new(mut args: std::env::Args) -> Result<Config, Box<dyn error::Error>> {
+    pub fn new(mut args: std::env::Args) -> Result<Config> {
         args.next();
         let mut subcommand = String::new();
-        let input = Some(vec![]);
-        let mut options = Options::new(false, input.clone());
-        let mut arguments = vec![];
-
         match args.next() {
             Some(arg) => subcommand = arg,
             None => help(),
@@ -54,17 +51,7 @@ impl Config {
                 config: Command::Version,
             }),
             _ => {
-                while let Some(arg) = args.next() {
-                    arguments.push(arg)
-                }
-                let mut options_args = arguments.clone();
-                options_args.retain(|arg| arg.starts_with("-"));
-                let mut input_arguments = arguments.clone();
-                input_arguments.retain(|arg| !arg.starts_with("-"));
-                if options_args.contains(&"-f".to_string()) {
-                    options.force = true
-                }
-                options.input = Some(input_arguments);
+                let options = get_options(&mut args);
                 match subcommand.as_str() {
                     "init" => Ok(Config {
                         config: Command::Init(options.clone()),
@@ -93,7 +80,23 @@ impl Config {
     }
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
+fn get_options(args: &mut Args) -> Options {
+    let (mut flags, mut input) = (vec![], vec![]);
+    while let Some(arg) = args.next() {
+        if arg.starts_with("-") {
+            flags.push(arg)
+        } else {
+            input.push(arg)
+        }
+    }
+    let mut options = Options::new(false, Some(input));
+    if flags.contains(&"-f".to_string()) {
+        options.force = true
+    }
+    options
+}
+
+pub fn run(config: Config) -> Result<()> {
     match config.config {
         Command::Init(options) => init(options),
         Command::Help => Ok(help()),
@@ -107,62 +110,61 @@ pub fn run(config: Config) -> Result<(), Box<dyn error::Error>> {
     }
 }
 
-pub fn init(options: Options) -> Result<(), Box<dyn error::Error>> {
+fn init(options: Options) -> Result<()> {
     match ipss::configuration::initialize(options.force) {
         Ok(()) => Ok(println!("Configuration initialized correctly.")),
         Err(e) => Err(e),
     }
 }
 
-pub fn add(options: Options) -> Result<(), Box<dyn error::Error>> {
+fn add(options: Options) -> Result<()> {
     match options.input {
         Some(input) => engine::add(input),
-        None => Err(CustomError::new("No input was provided.".to_string())),
+        None => Err(CustomError::new("No input was provided.")),
     }
 }
 
-pub fn cat(options: Options) -> Result<(), Box<dyn error::Error>> {
+fn cat(options: Options) -> Result<()> {
     match options.input {
         Some(input) => {
             if input.len() == 1 {
                 engine::cat(Path::new("./").join(input[0].clone()))
             } else {
-                Err(CustomError::new(
-                    "More than one file was provided.".to_string(),
-                ))
+                Err(CustomError::new("More than one file was provided."))
             }
         }
-        None => Err(CustomError::new("No input was provided".to_string())),
+        None => Err(CustomError::new("No input was provided")),
     }
 }
 
-pub fn get(options: Options) -> Result<(), Box<dyn error::Error>> {
+fn get(options: Options) -> Result<()> {
     match options.input {
         Some(input) => engine::get(input),
-        None => Err(CustomError::new("No input was provided.".to_string())),
+        None => Err(CustomError::new("No input was provided.")),
     }
 }
 
-pub fn remove(options: Options) -> Result<(), Box<dyn error::Error>> {
+fn remove(options: Options) -> Result<()> {
     match options.input {
         Some(input) => engine::remove(input),
-        None => Err(CustomError::new("No input was provided.".to_string())),
+        None => Err(CustomError::new("No input was provided.")),
     }
 }
 
-pub fn daemon() -> Result<(), Box<dyn error::Error>> {
+fn daemon() -> Result<()> {
     daemon::init()
 }
 
-pub fn version() {
+fn version() {
     println!("IPSS v0.1.1")
 }
 
-pub fn unknown(arg: String) -> Result<(), Box<dyn error::Error>> {
-    Err(CustomError::new(format!("no such subcommand: {}", arg)))
+fn unknown(arg: String) -> Result<()> {
+    let error: &str = &format!("no such subcommand: {}", arg).to_owned()[..];
+    Err(CustomError::new(error))
 }
 
-pub fn help() {
+fn help() {
     println!(
         "\n
         ██╗██████╗ ███████╗███████╗
@@ -181,7 +183,7 @@ USAGE
 SUBCOMMANDS
   BASIC COMMANDS
     version         Prints the current version.
-    init [-f]       Initialize ipss local configuration. [-f] to force reinitialization.
+    init [-f]       Initialize IPSS local configuration. [-f] to force reinitialization.
     add <path>      Add a file to IPFS and sync it with IPSS. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
     get <ref>       Download IPFS objects stores in IPSS. [Not Implemented]

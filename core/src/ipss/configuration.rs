@@ -9,8 +9,7 @@ pub fn initialize(force: bool) -> Result<(), Box<dyn error::Error>> {
         if Path::new(&make_path("")?).exists() {
             return Err(CustomError::new(
                 "Configuration already exists, try using -f to \
-            reinitialize, this will delete any previous configuration and files in your account."
-                    .to_string(),
+            reinitialize, this will delete any previous configuration and files in your account.",
             ));
         }
     }
@@ -35,8 +34,6 @@ fn make_config() -> Result<(), Box<dyn error::Error>> {
 fn make_path(ext: &str) -> Result<String, Box<dyn error::Error>> {
     match home_dir() {
         Some(home) => Ok(format!("{}/.config/ipss/{}", &home.to_str().unwrap(), ext)),
-        None => Err(CustomError::new(
-            "Home folder could not be found.".to_string(),
-        )),
+        None => Err(CustomError::new("Home folder could not be found.")),
     }
 }
