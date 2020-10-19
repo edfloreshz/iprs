@@ -1,9 +1,9 @@
-use crate::{Action, QueueState};
+use crate::{Action, QueueState, Result};
 use nanoid::nanoid;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::{Path, PathBuf};
-use std::{env, error, fmt};
+use std::path::PathBuf;
+use std::fmt;
 
 #[derive(Clone)]
 pub struct QueuedFile {
@@ -28,17 +28,20 @@ impl QueuedFile {
             state: QueueState::Local,
         }
     }
-    pub fn upload(&mut self) -> Result<(), Box<dyn error::Error>> {
-        let file = File::open(&self.path);
-        match file {
+    pub fn upload(&mut self) -> Result<()> {
+        File::open(&self.path)?;
+        match self.replicate() {
             Ok(..) => {
-                //TODO: Upload file
                 self.state = QueueState::Uploaded;
-                println!("{}", self);
+                println!("Uploaded file: {}", self);
                 Ok(())
             }
-            Err(e) => Err(Box::new(e)),
+            Err(e) => Err(e),
         }
+    }
+    fn replicate(&self) -> Result<()> {
+        // TODO: Mark file for replication
+        Ok(())
     }
 }
 
@@ -46,7 +49,7 @@ impl fmt::Display for QueuedFile {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Queue file: ( \n    name: {}, \n    path: {}, \n    id: {}, \n    action: {}, \n    state: {}\n)",
+            "\n    name: {}, \n    path: {}, \n    id: {}, \n    action: {}, \n    state: {}\n",
             self.name,
             self.path.to_str().unwrap(),
             self.tracking_id,
@@ -56,31 +59,53 @@ impl fmt::Display for QueuedFile {
     }
 }
 
-pub fn add(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+pub fn add(input: Vec<PathBuf>) -> Result<()> {
     for file in input.iter() {
-        let path = Path::new(&env::current_dir()?).join(file);
-        println!("Uploading {}", path.display());
-        let mut queued_file = QueuedFile::new(path, Action::Create);
-        queued_file.upload()?
+        if file.exists() {
+            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
+            queued_file.upload()?
+        }
     }
     Ok(())
 }
 
-pub fn get(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+pub fn rename(input: Vec<PathBuf>) -> Result<()> {
+    for file in input.iter() {
+        if file.exists() {
+            println!("{}", file.as_path().display());
+            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
+            queued_file.upload()?
+        }
+    }
+    Ok(())
+}
+
+pub fn update(input: Vec<PathBuf>) -> Result<()> {
+    for file in input.iter() {
+        println!("Uploading {}", file.display());
+        if file.exists() {
+            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
+            queued_file.upload()?
+        }
+    }
+    Ok(())
+}
+
+pub fn get(input: Vec<String>) -> Result<()> {
     for file in input.iter() {
         println!("Getting {}", file)
     }
     Ok(())
 }
 
-pub fn remove(input: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+pub fn remove(input: Vec<String>) -> Result<()> {
     for file in input.iter() {
         println!("Removing {}", file)
     }
     Ok(())
 }
 
-pub fn cat(path: PathBuf) -> Result<(), Box<dyn error::Error>> {
+pub fn cat(path: PathBuf) -> Result<()> {
     match File::open(path) {
         Ok(file) => Ok(for line in BufReader::new(file).lines() {
             println!("{}", line.unwrap())
@@ -89,6 +114,6 @@ pub fn cat(path: PathBuf) -> Result<(), Box<dyn error::Error>> {
     }
 }
 
-pub fn generate_tracking_id() -> String {
+fn generate_tracking_id() -> String {
     nanoid!(10)
 }

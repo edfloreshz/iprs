@@ -1,10 +1,9 @@
-use crate::errors::custom::CustomError;
+use crate::{Result, errors::custom::CustomError};
 use dirs::home_dir;
-use std::fs::File;
 use std::path::Path;
-use std::{error, fs};
+use std::fs;
 
-pub fn initialize(force: bool) -> Result<(), Box<dyn error::Error>> {
+pub fn initialize(force: bool) -> Result<()> {
     if !force {
         if Path::new(&make_path("")?).exists() {
             return Err(CustomError::new(
@@ -13,25 +12,22 @@ pub fn initialize(force: bool) -> Result<(), Box<dyn error::Error>> {
             ));
         }
     }
-    match make_config() {
-        Ok(..) => Ok(()),
-        Err(e) => Err(e),
-    }
+    make_config()
 }
 
-fn make_config() -> Result<(), Box<dyn error::Error>> {
+fn make_config() -> Result<()> {
     let config_paths = vec![make_path("config")?, make_path("database")?];
     let file_paths = vec![make_path("database/files.db")?];
     for path in config_paths {
         fs::create_dir_all(path)?;
     }
     for path in file_paths {
-        File::create(path)?;
+        fs::File::create(path)?;
     }
     Ok(())
 }
 
-fn make_path(ext: &str) -> Result<String, Box<dyn error::Error>> {
+fn make_path(ext: &str) -> Result<String> {
     match home_dir() {
         Some(home) => Ok(format!("{}/.config/ipss/{}", &home.to_str().unwrap(), ext)),
         None => Err(CustomError::new("Home folder could not be found.")),
