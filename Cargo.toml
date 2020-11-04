@@ -1,5 +1,5 @@
 [package]
-name = "ipss"
+name = "iprs"
 version = "0.1.1"
 authors = ["Eduardo Flores <edfloreshz@gmail.com>"]
 edition = "2018"

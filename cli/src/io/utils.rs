@@ -1,7 +1,7 @@
 use crate::Result;
 use core::errors::custom::CustomError;
-use core::ipss;
-use core::ipss::daemon;
+use core::iprs;
+use core::iprs::daemon;
 use core::replication::engine;
 use std::env::Args;
 use std::path::Path;
@@ -111,7 +111,7 @@ pub fn run(config: Config) -> Result<()> {
 }
 
 fn init(options: Options) -> Result<()> {
-    match ipss::configuration::initialize(options.force) {
+    match iprs::configuration::initialize(options.force) {
         Ok(()) => Ok(println!("Configuration initialized correctly.")),
         Err(e) => Err(e),
     }
@@ -163,7 +163,7 @@ fn daemon() -> Result<()> {
 }
 
 fn version() {
-    println!("IPSS v0.1.1")
+    println!("IPRS v0.1.1")
 }
 
 fn unknown(arg: String) -> Result<()> {
@@ -183,18 +183,18 @@ fn help() {
 \n
 Welcome to the InterPlanetary Sync System! \n
 USAGE
-  ipss - Global p2p file replication system
+  iprs - Global p2p file replication system
 
-  ipfs help - Show subcommands.
+  iprs help - Show subcommands.
 
 SUBCOMMANDS
   BASIC COMMANDS
     version         Prints the current version.
-    init [-f]       Initialize IPSS local configuration. [-f] to force reinitialization.
-    add <path>      Add a file to IPFS and sync it with IPSS. [Partially Implemented]
+    init [-f]       Initialize IPRS local configuration. [-f] to force reinitialization.
+    add <path>      Add a file to IPFS and sync it with IPRS. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
-    get <ref>       Download IPFS objects stores in IPSS. [Not Implemented]
-    remove <ref>    Remove IPFS objects from IPSS. [Not Implemented]
+    get <ref>       Download IPFS objects stores in IPRS. [Not Implemented]
+    remove <ref>    Remove IPFS objects from IPRS. [Not Implemented]
 ADVANCED COMMANDS
   daemon            Start a long-running daemon process. [Partially Implemented]"
     );

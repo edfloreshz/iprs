@@ -1,7 +1,7 @@
 use std::fmt;
 
 pub mod errors;
-pub mod ipss;
+pub mod iprs;
 pub mod replication;
 
 use std::error;

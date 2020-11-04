@@ -29,7 +29,7 @@ fn make_config() -> Result<()> {
 
 fn make_path(ext: &str) -> Result<String> {
     match home_dir() {
-        Some(home) => Ok(format!("{}/.config/ipss/{}", &home.to_str().unwrap(), ext)),
+        Some(home) => Ok(format!("{}/.config/iprs/{}", &home.to_str().unwrap(), ext)),
         None => Err(CustomError::new("Home folder could not be found.")),
     }
 }
