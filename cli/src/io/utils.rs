@@ -181,7 +181,7 @@ fn help() {
         ██║██║     ██║  ██║███████║
         ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝
 \n
-Welcome to the InterPlanetary Sync System! \n
+Welcome to the InterPlanetary Replication System! \n
 USAGE
   iprs - Global p2p file replication system
 
@@ -191,7 +191,7 @@ SUBCOMMANDS
   BASIC COMMANDS
     version         Prints the current version.
     init [-f]       Initialize IPRS local configuration. [-f] to force reinitialization.
-    add <path>      Add a file to IPFS and sync it with IPRS. [Partially Implemented]
+    add <path>      Add a file to IPFS and mark it for replication. [Partially Implemented]
     cat <ref>       Show IPFS object details. [Not Implemented]
     get <ref>       Download IPFS objects stores in IPRS. [Not Implemented]
     remove <ref>    Remove IPFS objects from IPRS. [Not Implemented]
