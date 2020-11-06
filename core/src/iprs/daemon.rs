@@ -66,7 +66,8 @@ fn watch_events(
                     op::WRITE => (),
                     op::RENAME => rename(vec![path.clone()])?,
                     op::REMOVE => {
-                        remove(vec![path.clone().into_os_string().into_string().unwrap()])?
+                        let file = vec![path.clone().into_os_string().into_string().unwrap()];
+                        remove(file)?
                     }
                     op::CHMOD => update(vec![path.clone()])?,
                     op::CLOSE_WRITE => update(vec![path.clone()])?,

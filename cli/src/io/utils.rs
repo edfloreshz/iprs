@@ -5,7 +5,7 @@ use core::iprs::daemon;
 use core::replication::engine;
 use std::env::Args;
 use std::path::Path;
-use std::{process, env};
+use std::{env, process};
 
 pub struct Config {
     pub config: Command,
@@ -126,7 +126,7 @@ fn add(options: Options) -> Result<()> {
                 .map(|file_name| Path::new(current_dir).join(file_name))
                 .collect();
             engine::add(path)
-        },
+        }
         None => Err(CustomError::new("No input was provided.")),
     }
 }

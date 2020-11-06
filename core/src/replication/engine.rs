@@ -1,9 +1,9 @@
 use crate::{Action, QueueState, Result};
 use nanoid::nanoid;
+use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use std::fmt;
 
 #[derive(Clone)]
 pub struct QueuedFile {

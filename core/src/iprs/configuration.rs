@@ -1,7 +1,7 @@
-use crate::{Result, errors::custom::CustomError};
+use crate::{errors::custom::CustomError, Result};
 use dirs::home_dir;
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 pub fn initialize(force: bool) -> Result<()> {
     if !force {
