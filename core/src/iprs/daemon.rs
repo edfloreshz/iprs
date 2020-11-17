@@ -39,6 +39,15 @@ pub fn init() -> Result<()> {
     watch_events(directories, rx, tx)
 }
 
+#[cfg(windows)]
+pub fn init() -> Result<()> {
+    println!("Initializing the daemon...");
+    // Create a channel to receive the events.
+    let (tx, rx) = channel();
+    let directories: Vec<Option<PathBuf>> = vec![download_dir(), document_dir(), desktop_dir()];
+    watch_events(directories, rx, tx)
+}
+
 fn watch_events(
     directories: Vec<Option<PathBuf>>,
     rx: Receiver<RawEvent>,
@@ -62,15 +71,12 @@ fn watch_events(
             }) => {
                 println!("{:?} {:?} ({:?})", op, path, cookie);
                 match op {
-                    op::CREATE => add(vec![path.clone()])?,
+                    op::CREATE => add(path.clone())?,
                     op::WRITE => (),
-                    op::RENAME => rename(vec![path.clone()])?,
-                    op::REMOVE => {
-                        let file = vec![path.clone().into_os_string().into_string().unwrap()];
-                        remove(file)?
-                    }
-                    op::CHMOD => update(vec![path.clone()])?,
-                    op::CLOSE_WRITE => update(vec![path.clone()])?,
+                    op::RENAME => rename(path.clone())?,
+                    op::REMOVE => remove(path.clone())?,
+                    op::CHMOD => update(path.clone())?,
+                    op::CLOSE_WRITE => update(path.clone())?,
                     op::RESCAN => (),
                     _ => println!("Unhandled event"),
                 };
@@ -79,13 +85,4 @@ fn watch_events(
             Err(e) => println!("watch error: {:?}", e),
         }
     }
-}
-
-#[cfg(windows)]
-pub fn init() -> Result<()> {
-    println!("Initializing the daemon...");
-    // Create a channel to receive the events.
-    let (tx, rx) = channel();
-    let directories: Vec<Option<PathBuf>> = vec![download_dir(), document_dir(), desktop_dir()];
-    watch_events(directories, rx, tx)
 }

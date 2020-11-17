@@ -59,50 +59,38 @@ impl fmt::Display for QueuedFile {
     }
 }
 
-pub fn add(input: Vec<PathBuf>) -> Result<()> {
-    for file in input.iter() {
-        if file.exists() {
-            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
-            queued_file.upload()?
-        }
+pub fn add(input: PathBuf) -> Result<()> {
+    if input.exists() {
+        let mut queued_file = QueuedFile::new(input.to_path_buf(), Action::Modify);
+        queued_file.upload()?
     }
     Ok(())
 }
 
-pub fn rename(input: Vec<PathBuf>) -> Result<()> {
-    for file in input.iter() {
-        if file.exists() {
-            println!("{}", file.as_path().display());
-            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
-            queued_file.upload()?
-        }
+pub fn rename(input: PathBuf) -> Result<()> {
+    if input.exists() {
+        println!("{}", input.as_path().display());
+        let mut queued_file = QueuedFile::new(input.to_path_buf(), Action::Modify);
+        queued_file.upload()?
     }
     Ok(())
 }
 
-pub fn update(input: Vec<PathBuf>) -> Result<()> {
-    for file in input.iter() {
-        println!("Uploading {}", file.display());
-        if file.exists() {
-            let mut queued_file = QueuedFile::new(file.to_path_buf(), Action::Modify);
-            queued_file.upload()?
-        }
+pub fn update(input: PathBuf) -> Result<()> {
+    println!("Uploading {}", input.display());
+    if input.exists() {
+        let mut queued_file = QueuedFile::new(input.to_path_buf(), Action::Modify);
+        queued_file.upload()?
     }
     Ok(())
 }
 
-pub fn get(input: Vec<String>) -> Result<()> {
-    for file in input.iter() {
-        println!("Getting {}", file)
-    }
-    Ok(())
+pub fn get(input: PathBuf) -> Result<()> {
+    Ok(println!("Getting {}", input.display()))
 }
 
-pub fn remove(input: Vec<String>) -> Result<()> {
-    for file in input.iter() {
-        println!("Removing {}", file)
-    }
-    Ok(())
+pub fn remove(input: PathBuf) -> Result<()> {
+    Ok(println!("Removing {}", input.display()))
 }
 
 pub fn cat(path: PathBuf) -> Result<()> {

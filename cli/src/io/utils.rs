@@ -3,9 +3,9 @@ use core::errors::custom::CustomError;
 use core::iprs;
 use core::iprs::daemon;
 use core::replication::engine;
-use std::env::Args;
 use std::path::Path;
 use std::{env, process};
+use std::{env::Args, path::PathBuf};
 
 pub struct Config {
     pub config: Command,
@@ -121,11 +121,12 @@ fn add(options: Options) -> Result<()> {
     match options.input {
         Some(input) => {
             let current_dir = &env::current_dir()?;
-            let path = input
-                .iter()
-                .map(|file_name| Path::new(current_dir).join(file_name))
-                .collect();
-            engine::add(path)
+            for file_name in input.iter() {
+                if let Err(e) = engine::add(PathBuf::from(current_dir).join(file_name)) {
+                    return Err(e);
+                }
+            }
+            Ok(())
         }
         None => Err(CustomError::new("No input was provided.")),
     }
@@ -146,14 +147,14 @@ fn cat(options: Options) -> Result<()> {
 
 fn get(options: Options) -> Result<()> {
     match options.input {
-        Some(input) => engine::get(input),
+        Some(input) => engine::get(PathBuf::from(&input[0])),
         None => Err(CustomError::new("No input was provided.")),
     }
 }
 
 fn remove(options: Options) -> Result<()> {
     match options.input {
-        Some(input) => engine::remove(input),
+        Some(input) => engine::remove(PathBuf::from(&input[0])),
         None => Err(CustomError::new("No input was provided.")),
     }
 }
