@@ -1,7 +1,8 @@
-use cli::ParsedArgs;
+use cli::{ParsedArgs, Result};
 
-fn main() {
+fn main() -> Result<()> {
     let matches = ParsedArgs::new();
     matches.call();
+    Ok(())
 }
 
