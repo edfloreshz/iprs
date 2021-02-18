@@ -1,6 +1,6 @@
 [package]
 name = "iprs"
-version = "0.1.1"
+version = "0.1.0"
 authors = ["Eduardo Flores <edfloreshz@gmail.com>"]
 edition = "2018"
 
@@ -8,4 +8,3 @@ edition = "2018"
 
 [dependencies]
 cli = { path = "cli" }
-file_explorer = { path = "file_explorer" }

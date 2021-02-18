@@ -7,19 +7,12 @@
 ![Rust](https://github.com/edfloreshz/iprs/workflows/Rust/badge.svg?branch=master)
 [![Run on Repl.it](https://repl.it/badge/github/edfloreshz/iprs)](https://repl.it/github/edfloreshz/iprs)
 
-The InterPlanetary Sync System or IPRS is a tool that allows users to store and sync their files in nearby nodes connected to the IPFS Network. 
+The InterPlanetary Replication System or IPRS is a tool that allows users to store and sync their files in nearby nodes connected to the IPFS Network. 
 
 
 ## How does it work?
 
-**IPRS** will run background as a daemon on your personal computer and keep track of every change you make to your file system on supported folders, it will upload every new version of your files and folders to nearby nodes connected to the IPFS network and keep them up to date, you will be able to access them anywhere. Everything you upload will always be available to you.
-
-## Installing from release
-Download a build from the [release](https://github.com/edfloreshz/iprs/releases) page and unzip it.
-
-To install run `./install.sh`
-
-To uninstall run `./uninstall.sh`
+**IPRS** will run in the background in your personal computer and keep track of every change you make to your file system, then upload every new version of your files and folders to nearby nodes connected to the IPFS network and keep them up to date, you will be able to access them anywhere. Everything you upload will always be available to you.
 
 ## Installing with cargo
 Install the binary with `cargo install --path .`
